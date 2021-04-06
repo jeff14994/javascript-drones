@@ -8,6 +8,7 @@ const commandDelays = require('./commandDelays');
 
 const PORT = 8889;
 const HOST = '192.168.10.1';
+//  Create udp socket
 const drone = dgram.createSocket('udp4');
 drone.bind(PORT);
 
@@ -40,7 +41,7 @@ const commands = ['command', 'battery?', 'takeoff', 'land'];
 // const commands = ['command', 'battery?'];
 
 const i = 0;
-
+// handleError did not handle anything receives, it only tells you if you send the command
 drone.send('command', 0, 'command'.length, PORT, HOST, handleError);
 
 // async function go() {
