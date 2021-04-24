@@ -1,6 +1,6 @@
 import {useState} from 'react';
 import { RESERVED_EVENTS } from 'socket.io/dist/socket';
-import socket from '../socket';
+import socket from '../socket-example';
 
 function useSocket() {
     const [status, updateStatus] = useState('DISCONNECTED');

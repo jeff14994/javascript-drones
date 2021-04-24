@@ -1,7 +1,9 @@
 const dgram = require('dgram');
 const wait = require('waait');
+const express = require('express');
 const app = require('express')();
 const http = require('http').Server(app);
+const throttle = require('lodash/throttle');
 const io = require('./node_modules/socket.io')(http);
 const commandDelay = require('../backend/commandDelays');
 
@@ -28,7 +30,20 @@ drone.on('message', message => {
 
 // Parse Tello State
 function parseState(state) {
-    return state.split(';').map(x => x.split(':'));
+    /*
+        {
+            returnCode: '200',
+            message: 'object'
+        }
+    */
+    var data = {}
+    // Return Array
+    // detail = state.split(';');
+    // Return Formatted data
+    detail = state.split(';').map(x => x + '\n').join('');
+    data.returnCode = '200';
+    data.message = detail;
+    return data;
 }
 
 function handleError(err){
@@ -44,7 +59,7 @@ function handleError(err){
 // drone.send('wifi?', 0, 'wifi?'.length, PORT, HOST, handleError);
 // const commands = ['command', 'battery?', 'takeoff', 'land'];
 const commands = ['command', 'battery?'];
-// let i = 0;
+let i = 0;
 // async function go(){
 //     const command = commands[i];
 //     const delay = commandDelay[command];
@@ -61,42 +76,49 @@ const commands = ['command', 'battery?'];
 
 // go();
 
-io.on('connection', socket => {
-    socket.on('command', command => {
-    console.log('command Sent from browser');
-    console.log(command);
-    drone.send(command, 0, command.length, PORT, HOST, handleError);
-    });
-    socket.emit('status', 'CONNECTED');
-});
-// Receive fomatted drone data
-droneState.on( 'message', state => {
-    // console.log(state.toString());
-    const formattedState = parseState(state.toString());
-    console.log(formattedState);
-});
-// [
-//     [ 'pitch', '0' ],  [ 'roll', '0' ],
-//     [ 'yaw', '-85' ],  [ 'vgx', '0' ],
-//     [ 'vgy', '0' ],    [ 'vgz', '0' ],
-//     [ 'templ', '92' ], [ 'temph', '94' ],
-//     [ 'tof', '10' ],   [ 'h', '0' ],
-//     [ 'bat', '86' ],   [ 'baro', '132.90' ],
-//     [ 'time', '0' ],   [ 'agx', '5.00' ],
-//     [ 'agy', '5.00' ], [ 'agz', '-999.00' ],
-//     [ '\r\n' ]
-//   ]
-//   [
-//     [ 'pitch', '0' ],  [ 'roll', '0' ],
-//     [ 'yaw', '-85' ],  [ 'vgx', '0' ],
-//     [ 'vgy', '0' ],    [ 'vgz', '0' ],
-//     [ 'templ', '92' ], [ 'temph', '94' ],
-//     [ 'tof', '10' ],   [ 'h', '0' ],
-//     [ 'bat', '86' ],   [ 'baro', '132.84' ],
-//     [ 'time', '0' ],   [ 'agx', '2.00' ],
-//     [ 'agy', '6.00' ], [ 'agz', '-999.00' ],
-//     [ '\r\n' ]
 
-http.listen(6767, () => {
+
+// //   [
+// //     [ 'pitch', '0' ],  [ 'roll', '0' ],
+// //     [ 'yaw', '-85' ],  [ 'vgx', '0' ],
+// //     [ 'vgy', '0' ],    [ 'vgz', '0' ],
+// //     [ 'templ', '92' ], [ 'temph', '94' ],
+// //     [ 'tof', '10' ],   [ 'h', '0' ],
+// //     [ 'bat', '86' ],   [ 'baro', '132.84' ],
+// //     [ 'time', '0' ],   [ 'agx', '2.00' ],
+// //     [ 'agy', '6.00' ], [ 'agz', '-999.00' ],
+// //     [ '\r\n' ]
+
+// Set ejs as frontend render engine
+app.set('view engine', 'ejs');
+app.get('/', (req, res) => {
+    res.render('index', {
+        title: 'Tello Dashboard'
+    });
+});
+
+http.listen(8000, () => {
     console.log('Socket io server up and running');
 });
+const serv_io = io.listen(http);
+
+// serv_io.sockets.on('connection', socket => {
+    // socket.on('command', command => {
+    // console.log('command Sent from browser');
+    // console.log(command);
+    // drone.send(command, 0, command.length, PORT, HOST, handleError);
+    // setInterval(() => {
+    //     socket.emit('droneStatus', receiveTelloStatus())
+    // }, 2000);
+    // socket.emit('status', 'CONNECTED');
+// });
+
+// Receive fomatted drone data
+droneState.on(
+    'message',
+    throttle(state => {
+    const formattedState = parseState(state.toString());
+    console.log(formattedState);
+    io.sockets.emit('dronestate', formattedState);
+    }, 100)
+);

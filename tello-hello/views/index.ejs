@@ -1,0 +1,18 @@
+<html>
+    <head>
+        <script src="/socket.io/socket.io.js"></script>
+    </head>
+
+<body>
+    <h1><%= title %> </h1>
+    <script>
+        var socket = io.connect();
+        socket.on('dronestate', function(data) {
+            console.log(data);
+            document.getElementById('status').innerText = `Tello status\n${data.message}`;
+        });
+    </script>
+    <p id="status"></p>
+</body>
+</html> 
+

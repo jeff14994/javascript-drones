@@ -7,6 +7,7 @@
 <body>
     <script>
         var socket = io.connect();
+        // data 來自 server 端的 emit 呼叫的 call-back funtion 的 data
         socket.on('randomNum', function(data) {
             console.log(data.message);
             document.getElementById('viewText').innerText = `I don't need to reload~\n${data.message}`;
