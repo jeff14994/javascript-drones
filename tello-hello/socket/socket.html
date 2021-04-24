@@ -1,0 +1,19 @@
+<html>
+
+<head>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+
+<body>
+    <script>
+        var socket = io.connect();
+        socket.on('randomNum', function(data) {
+            console.log(data.message);
+            document.getElementById('viewText').innerText = `I don't need to reload~\n${data.message}`;
+        });
+    </script>
+    <p id=viewText> I don't need to reload~
+    </p>
+</body>
+
+</html>

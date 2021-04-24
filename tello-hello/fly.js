@@ -74,9 +74,28 @@ droneState.on( 'message', state => {
     // console.log(state.toString());
     const formattedState = parseState(state.toString());
     console.log(formattedState);
-}
-
-);
+});
+// [
+//     [ 'pitch', '0' ],  [ 'roll', '0' ],
+//     [ 'yaw', '-85' ],  [ 'vgx', '0' ],
+//     [ 'vgy', '0' ],    [ 'vgz', '0' ],
+//     [ 'templ', '92' ], [ 'temph', '94' ],
+//     [ 'tof', '10' ],   [ 'h', '0' ],
+//     [ 'bat', '86' ],   [ 'baro', '132.90' ],
+//     [ 'time', '0' ],   [ 'agx', '5.00' ],
+//     [ 'agy', '5.00' ], [ 'agz', '-999.00' ],
+//     [ '\r\n' ]
+//   ]
+//   [
+//     [ 'pitch', '0' ],  [ 'roll', '0' ],
+//     [ 'yaw', '-85' ],  [ 'vgx', '0' ],
+//     [ 'vgy', '0' ],    [ 'vgz', '0' ],
+//     [ 'templ', '92' ], [ 'temph', '94' ],
+//     [ 'tof', '10' ],   [ 'h', '0' ],
+//     [ 'bat', '86' ],   [ 'baro', '132.84' ],
+//     [ 'time', '0' ],   [ 'agx', '2.00' ],
+//     [ 'agy', '6.00' ], [ 'agz', '-999.00' ],
+//     [ '\r\n' ]
 
 http.listen(6767, () => {
     console.log('Socket io server up and running');
