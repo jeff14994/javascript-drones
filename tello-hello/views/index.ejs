@@ -1,18 +1,30 @@
 <html>
     <head>
         <script src="/socket.io/socket.io.js"></script>
+        
     </head>
 
 <body>
     <h1><%= title %> </h1>
-    <script>
-        var socket = io.connect();
-        socket.on('dronestate', function(data) {
-            console.log(data);
-            document.getElementById('status').innerText = `Tello status\n${data.message}`;
-        });
-    </script>
-    <p id="status"></p>
+    <div class="control">
+        <button onclick="sendCommand('takeoff')">Taking off</button>
+        <button onclick="sendCommand('land')">Landing</button>
+        <button onclick="sendCommand('emergency')"> Emergency</button>
+    </div>
+    <div class="stats" style="width: 40%; float:left"><p id="status"></p></div>
+    <div class="image" style="width: 60%; float:right">123</div>
 </body>
+<script>
+    // Socket Client
+    var socket = io.connect();
+    socket.on('dronestate', function(data) {
+        console.log(data);
+        document.getElementById('status').innerText = `Tello status\n${data.message}`;
+    });
+    var sendCommand = command => {
+        console.log(`Sending the command ${command}`);
+        socket.emit('command', command);
+    };
+</script>
 </html> 
 

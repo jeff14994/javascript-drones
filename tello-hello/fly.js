@@ -53,7 +53,8 @@ function handleError(err){
     }
 };
 // Send data to drone 
-// drone.send('command', 0, 'command'.length, PORT, HOST, handleError);
+// Initialize drone by sending 'command' to the tello server
+drone.send('command', 0, 'command'.length, PORT, HOST, handleError);
 // drone.send('battery?', 0, 'battery?'.length, PORT, HOST, handleError);
 // drone.send('time?', 0, 'time?'.length, PORT, HOST, handleError);
 // drone.send('wifi?', 0, 'wifi?'.length, PORT, HOST, handleError);
@@ -100,18 +101,16 @@ app.get('/', (req, res) => {
 http.listen(8000, () => {
     console.log('Socket io server up and running');
 });
-const serv_io = io.listen(http);
-
-// serv_io.sockets.on('connection', socket => {
-    // socket.on('command', command => {
-    // console.log('command Sent from browser');
-    // console.log(command);
-    // drone.send(command, 0, command.length, PORT, HOST, handleError);
-    // setInterval(() => {
-    //     socket.emit('droneStatus', receiveTelloStatus())
-    // }, 2000);
-    // socket.emit('status', 'CONNECTED');
-// });
+// Socket Server
+io.sockets.on('connection', socket => {
+    socket.on('command', command => {
+      console.log('command Sent from browser');
+      console.log(command);
+      drone.send(command, 0, command.length, PORT, HOST, handleError);
+    });
+  
+    socket.emit('status', 'CONNECTED');
+  });
 
 // Receive fomatted drone data
 droneState.on(
