@@ -11,6 +11,24 @@
         <button onclick="sendCommand('land')">Landing</button>
         <button onclick="sendCommand('emergency')"> Emergency</button>
     </div>
+    <div>
+        
+        <button style="margin-left: 50px; width: 50px" onclick="sendCommand('up 50')">Up</button>
+        <button style="width: 50px" onclick="sendCommand('down 50')">Down</button>
+    </div>
+    <div>
+        <div>
+            <button style="margin-left: 70px" onclick="sendCommand('forward 50')">Forward</button>
+        </div>
+        <div>
+            <button style="margin-left: 60px" onclick="sendCommand('left 50')">Left</button>
+            <button onclick="sendCommand('right 50')">Right</button>
+        </div>
+        <div>
+            <button style="margin-left: 70px" onclick="sendCommand('back 50')">Back</button>
+        </div>
+    </div>
+    
     <div class="stats" style="width: 40%; float:left"><p id="status"></p></div>
     <div class="image" style="width: 60%; float:right">123</div>
 </body>
@@ -22,8 +40,9 @@
         document.getElementById('status').innerText = `Tello status\n${data.message}`;
     });
     var sendCommand = command => {
+
         console.log(`Sending the command ${command}`);
-        socket.emit('command', command);
+        socket.emit('command', command );
     };
 </script>
 </html> 
