@@ -1,7 +1,5 @@
 from djitellopy import tello
-
 import KeyPressModule as kp
-
 from time import sleep
 
 kp.init()
@@ -10,12 +8,9 @@ me.connect()
 print(me.get_battery())
 def getKeyboardInput():
     lr, fb, ud, yv = 0, 0, 0, 0
-
     speed = 50
-
     if kp.getKey("LEFT"): 
         lr = -speed
-
     elif kp.getKey("RIGHT"): 
         lr = speed
 
@@ -23,6 +18,7 @@ def getKeyboardInput():
         fb = speed
     elif kp.getKey("DOWN"): 
         fb = -speed
+
     if kp.getKey("w"):
         ud = speed
     elif kp.getKey("s"): 
@@ -42,10 +38,11 @@ def getKeyboardInput():
 
     return [lr, fb, ud, yv]
 
-while True:
-    print('Battery: ', me.get_battery(), ' %')
-    vals = getKeyboardInput()
+if __name__ == '__main__':
+    while True:
+        print('Battery: ', me.get_battery(), ' %')
+        vals = getKeyboardInput()
 
-    me.send_rc_control(vals[0], vals[1], vals[2], vals[3])
+        me.send_rc_control(vals[0], vals[1], vals[2], vals[3])
 
-    sleep(0.05)
+        sleep(0.05)

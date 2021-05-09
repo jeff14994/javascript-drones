@@ -1,15 +1,15 @@
 from djitellopy import Tello
 import cv2
 import numpy as np
- 
- 
+from keyboard_control import getKeyboardInput
+from time import sleep
 ######################################################################
 width = 640  # WIDTH OF THE IMAGE
 height = 480  # HEIGHT OF THE IMAGE
-deadZone =100
-######################################################################
+deadZone = 100
+###############################qe#######################################
  # 0 to fly, 1 not fly
-startCounter = 0
+startCounter = 1
  
 # CONNECT TO TELLO
 me = Tello()
@@ -102,10 +102,10 @@ def getContours(img,imgContour):
             x , y , w, h = cv2.boundingRect(approx)
             cx = int(x + (w / 2))  # CENTER X OF THE OBJECT
             cy = int(y + (h / 2))  # CENTER X OF THE OBJECT
- 
-            if (cx <int(frameWidth/2)-deadZone):
+            # Control Tello to follow the object
+            if (cx < int(frameWidth / 2) - deadZone):
                 cv2.putText(imgContour, " GO LEFT " , (20, 50), cv2.FONT_HERSHEY_COMPLEX,1,(0, 0, 255), 3)
-                cv2.rectangle(imgContour,(0,int(frameHeight/2-deadZone)),(int(frameWidth/2)-deadZone,int(frameHeight/2)+deadZone),(0,0,255),cv2.FILLED)
+                cv2.rectangle(imgContour, (0, int(frameHeight / 2 - deadZone)), (int(frameWidth / 2) - deadZone,int(frameHeight / 2) + deadZone),(0, 0, 255), cv2.FILLED)
                 dir = 1
             elif (cx > int(frameWidth / 2) + deadZone):
                 cv2.putText(imgContour, " GO RIGHT ", (20, 50), cv2.FONT_HERSHEY_COMPLEX,1,(0, 0, 255), 3)
@@ -119,14 +119,16 @@ def getContours(img,imgContour):
                 cv2.putText(imgContour, " GO DOWN ", (20, 50), cv2.FONT_HERSHEY_COMPLEX, 1,(0, 0, 255), 3)
                 cv2.rectangle(imgContour,(int(frameWidth/2-deadZone),int(frameHeight/2)+deadZone),(int(frameWidth/2+deadZone),frameHeight),(0,0,255),cv2.FILLED)
                 dir = 4
-            else: dir=0
+            else: 
+                dir = 0
  
             cv2.line(imgContour, (int(frameWidth/2),int(frameHeight/2)), (cx,cy),(0, 0, 255), 3)
             cv2.rectangle(imgContour, (x, y), (x + w, y + h), (0, 255, 0), 5)
             cv2.putText(imgContour, "Points: " + str(len(approx)), (x + w + 20, y + 20), cv2.FONT_HERSHEY_COMPLEX, .7,(0, 255, 0), 2)
             cv2.putText(imgContour, "Area: " + str(int(area)), (x + w + 20, y + 45), cv2.FONT_HERSHEY_COMPLEX, 0.7,(0, 255, 0), 2)
             cv2.putText(imgContour, " " + str(int(x)) + " " + str(int(y)), (x - 20, y - 45), cv2.FONT_HERSHEY_COMPLEX,0.7,(0, 255, 0), 2)
-        else: dir=0
+        else: 
+            dir = 0
  
 def display(img):
     cv2.line(img,(int(frameWidth/2)-deadZone,0),(int(frameWidth/2)-deadZone,frameHeight),(255,255,0),3)
@@ -136,7 +138,7 @@ def display(img):
     cv2.line(img, (0, int(frameHeight / 2) + deadZone), (frameWidth, int(frameHeight / 2) + deadZone), (255, 255, 0), 3)
  
 while True:
- 
+    print('Battery: ', me.get_battery(), ' %')
     # GET THE IMAGE FROM TELLO
     frame_read = me.get_frame_read()
     myFrame = frame_read.frame
@@ -157,7 +159,8 @@ while True:
     mask = cv2.inRange(imgHsv,lower,upper)
     result = cv2.bitwise_and(img,img, mask = mask)
     mask = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
- 
+    
+    # Set parameters for image processing
     imgBlur = cv2.GaussianBlur(result, (7, 7), 1)
     imgGray = cv2.cvtColor(imgBlur, cv2.COLOR_BGR2GRAY)
     threshold1 = cv2.getTrackbarPos("Threshold1", "Parameters")
@@ -165,6 +168,7 @@ while True:
     imgCanny = cv2.Canny(imgGray, threshold1, threshold2)
     kernel = np.ones((5, 5))
     imgDil = cv2.dilate(imgCanny, kernel, iterations=1)
+    # Display the Screen of Tello
     getContours(imgDil, imgContour)
     display(imgContour)
  
@@ -172,22 +176,42 @@ while True:
     if startCounter == 0:
        me.takeoff()
        startCounter = 1
+    # Get keyboard value
+    vals = getKeyboardInput()
+    # print("vals:", vals)
+    # print("vals' type:", type(vals))
+    # print("vals == True", vals == True)
+    if isinstance(vals, list):
+        if (vals[0] != 0 or vals[1] != 0 or vals[2] != 0 or vals[3] != 0):
+            me.send_rc_control(vals[0], vals[1], vals[2], vals[3])
+        # sleep(0.05)    
  
- 
+    # Object detection and Control Tello
     if dir == 1:
        me.yaw_velocity = -60
+       me.send_rc_control(0, 0, 0, me.yaw_velocity)
     elif dir == 2:
        me.yaw_velocity = 60
+       me.send_rc_control(0, 0, 0, me.yaw_velocity)
     elif dir == 3:
        me.up_down_velocity= 60
+       me.send_rc_control(0, 0, me.up_down_velocity, 0)
     elif dir == 4:
        me.up_down_velocity= -60
+       me.send_rc_control(0, 0, me.up_down_velocity, 0)
     else:
-       me.left_right_velocity = 0; me.for_back_velocity = 0;me.up_down_velocity = 0; me.yaw_velocity = 0
-   # SEND VELOCITY VALUES TO TELLO
-    if me.send_rc_control:
+       me.left_right_velocity = 0
+       me.for_back_velocity = 0
+       me.up_down_velocity = 0
+       me.yaw_velocity = 0
        me.send_rc_control(me.left_right_velocity, me.for_back_velocity, me.up_down_velocity, me.yaw_velocity)
-    print(dir)
+   # SEND VELOCITY VALUES TO TELLO
+    # print(me.send_rc_control)
+    # print("me.send_rc_control == True", me.send_rc_control == True)
+    # if me.send_rc_control:
+    #    me.send_rc_control(me.left_right_velocity, me.for_back_velocity, me.up_down_velocity, me.yaw_velocity)
+       
+    print('dir:', dir)
  
     stack = stackImages(0.9, ([img, result], [imgDil, imgContour]))
     cv2.imshow('Horizontal Stacking', stack)

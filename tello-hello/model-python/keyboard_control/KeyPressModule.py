@@ -3,7 +3,7 @@ import pygame
 def init():
 
     pygame.init()
-    win = pyg.ame.display.set_mode((400, 400))
+    win = pygame.display.set_mode((400, 400))
 
 def getKey(keyName):
     ans = False
@@ -13,7 +13,7 @@ def getKey(keyName):
 
     keyInput = pygame.key.get_pressed()
     myKey = getattr(pygame, 'K_{}'.format(keyName))
-    print('K_{}'.format(keyName))
+    # print('K_{}'.format(keyName))
 
     if keyInput[myKey]:
         ans = True
