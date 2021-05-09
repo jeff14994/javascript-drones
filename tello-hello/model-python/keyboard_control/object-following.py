@@ -2,7 +2,6 @@ from djitellopy import Tello
 import cv2
 import numpy as np
 from keyboard_control import getKeyboardInput
-from time import sleep
 ######################################################################
 width = 640  # WIDTH OF THE IMAGE
 height = 480  # HEIGHT OF THE IMAGE
@@ -187,6 +186,7 @@ while True:
         # sleep(0.05)    
  
     # Object detection and Control Tello
+    print('dir:', dir)
     if dir == 1:
        me.yaw_velocity = -60
        me.send_rc_control(0, 0, 0, me.yaw_velocity)
@@ -211,7 +211,6 @@ while True:
     # if me.send_rc_control:
     #    me.send_rc_control(me.left_right_velocity, me.for_back_velocity, me.up_down_velocity, me.yaw_velocity)
        
-    print('dir:', dir)
  
     stack = stackImages(0.9, ([img, result], [imgDil, imgContour]))
     cv2.imshow('Horizontal Stacking', stack)

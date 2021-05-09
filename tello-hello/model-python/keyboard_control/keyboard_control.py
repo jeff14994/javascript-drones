@@ -5,7 +5,7 @@ from time import sleep
 kp.init()
 me = tello.Tello()
 me.connect()
-print(me.get_battery())
+# print(me.get_battery())
 def getKeyboardInput():
     lr, fb, ud, yv = 0, 0, 0, 0
     speed = 50
