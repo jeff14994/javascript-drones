@@ -2,17 +2,21 @@ import cv2
 import numpy as np
 from djitellopy import tello
 import time
+from threading import Thread
 
 from scipy.misc import face
 ESC = 27
+keepRecording = True
 
 me = tello.Tello()
 me.connect()
 print(me.get_battery())
 me.streamon()
+frame_read = me.get_frame_read()
+# frame = me.get_frame_read().frame
 # me.takeoff()
 # me.send_rc_control(0, 0, 25, 0)
-time.sleep(2.2)
+# time.sleep(2.2)
 w, h = 360, 240
 fbRange = [6200, 6800]
 pid = [0.4, 0.4, 0]
@@ -37,7 +41,7 @@ def findFace(img):
     else:
         return img, [[0, 0], 0]
 
-def trackFace( info, w, pid, pError):
+def trackFace(info, w, pid, pError):
     area = info[1]
     x, y = info[0]
     fb = 0
@@ -56,40 +60,58 @@ def trackFace( info, w, pid, pError):
     #print(speed, fb)
     me.send_rc_control(0, fb, 0, speed)
     return error
+# define the countdown func.
+def countdown(t):
+    while t:
+        time.sleep(1)
+        t -= 1 
+    print('Fire in the hole!!')
+    return 0
 #cap = cv2.VideoCapture(1)
-# while True:
-#     #_, img = cap.read()
-#     img = me.get_frame_read().frame
-#     img = cv2.resize(img, (w, h))
-#     img, info = findFace(img)
-#     pError = trackFace( info, w, pid, pError)
-#     #print("Center", info[0], "Area", info[1])
-#     cv2.imshow("Output", img)
-#     if cv2.waitkey(1) & 0xFF == ord('q'):
-#         me.land()
-#         break
-# cap = cv2.VideoCapture(1)
-# cv2.namedWindow('video', cv2.WINDOW_NORMAL)
+
+def videoRecorder():
+    # create a VideoWrite object, recoring to ./video.avi
+    # 创建一个VideoWrite对象，存储画面至./video.avi
+    height, width, _ = frame_read.frame.shape
+    video = cv2.VideoWriter('video.avi', cv2.VideoWriter_fourcc(*'XVID'), 30, (width, height))
+
+    while keepRecording:
+        video.write(frame_read.frame)
+        time.sleep(1 / 30)
+
+    video.release()
+
 # Drone detects face then take off
-def main():
-    while True:
-        frame = me.get_frame_read().frame
-        # ret, frame = cap.read()
-        frame = cv2.resize(frame, (320, 240))
-        frame = cv2.flip(frame, 1)
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        faceCascade = cv2.CascadeClassifier("./haarcascades/haarcascade_frontalface_default.xml")
-        faces = faceCascade.detectMultiScale(gray, 1.1, 3)
-        for(x, y, w, h) in faces:
-            frame = cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 3)
-        if face:
-            me.takeoff()
-            # fly up 2.5 com
-            me.send_rc_control(0, 0, 25, 0)
-            time.sleep(1)
-            me.land()
-        cv2.imshow('video', frame)
-        if cv2.waitKey(1) == ESC:
-            cv2.destroyAllWindows()
-            cv2.waitKey(1)
-            break
+# def main():
+while True:
+    frame = cv2.resize(frame_read.frame, (320, 240))
+    frame = cv2.flip(frame_read.frame, 1)
+    gray = cv2.cvtColor(frame_read.frame, cv2.COLOR_BGR2GRAY)
+    faceCascade = cv2.CascadeClassifier("./haarcascades/haarcascade_frontalface_default.xml")
+    faces = faceCascade.detectMultiScale(gray, 1.1, 3)
+    for(x, y, w, h) in faces:
+        frame = cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 3)
+    # print(faces)
+    if len(faces) != 0:
+        print("Found a face")
+        recorder = Thread(target=videoRecorder)
+        recorder.start()
+        me.takeoff()
+        time.sleep(1)
+        # me.move_up(1)
+        me.move_down(20)
+        time.sleep(1)
+        me.rotate_counter_clockwise(360)
+        # fly up 2.5 com
+        # me.send_rc_control(0, 0, 15, 0)
+        # Record 10 seconds
+        me.land()
+        keepRecording = False
+        recorder.join()
+    cv2.imshow('video', frame)
+    if cv2.waitKey(1) == ESC:
+        cv2.destroyAllWindows()
+        cv2.waitKey(1)
+        # me.land()
+        break
+# main()
