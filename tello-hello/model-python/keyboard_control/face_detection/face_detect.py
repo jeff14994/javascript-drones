@@ -69,6 +69,7 @@ def countdown(t):
     return 0
 #cap = cv2.VideoCapture(1)
 
+# Resources: https://github.com/damiafuentes/DJITelloPy/blob/master/examples/record-video.py
 def videoRecorder():
     # create a VideoWrite object, recoring to ./video.avi
     # 创建一个VideoWrite对象，存储画面至./video.avi
