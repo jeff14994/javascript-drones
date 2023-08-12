@@ -1,3 +1,37 @@
+# Python Drone!
+The origin is JavaScript Drones; howerver, I intergrated the pre-trained Haar cascade classifier (haarcascade_frontalface_default.xml) to condtuct the face detection in the frame.
+## Why this project?
+Overall, the script is designed to make the drone take specific actions (take off, move, rotate, land) when a face is detected in its camera feed, and simultaneously record this footage.
+## Demo
+- [Implementation Video](https://www.youtube.com/watch?v=zxCsX5_7Tac&t=224s)
+- ![demo](./demo.png)
+
+## What I did
+I've created a Python script that makes use of the `djitellopy` library to control a Tello drone and the `cv2` library from OpenCV for video processing and face detection. Here's a summary of the code's functionalities:
+
+1. **Initialization**:
+    - Required libraries like `cv2` (OpenCV), `numpy`, `djitellopy`, `time`, and `threading` are imported.
+    - Constants like `ESC` are defined.
+    - A connection to the Tello drone is established, its battery status is printed, and its video streaming is started.
+
+2. **Video Recording**:
+    - The function `videoRecorder` records the drone's video feed. It initializes a video writer object (`video.avi` using XVID codec at 30 fps) and records frames from the drone as long as `keepRecording` remains True.
+
+3. **Main Functionality**:
+    - The `main` function continuously captures and processes video frames from the drone:
+        - The frame is resized and flipped.
+        - The frame is converted to grayscale.
+        - A pre-trained Haar cascade classifier (`haarcascade_frontalface_default.xml`) is used for face detection in the frame.
+        - If a face is detected in the frame:
+            - The face's bounding box is drawn on the frame.
+            - A new thread is started for video recording using the `videoRecorder` function.
+            - The drone takes off, moves down a bit, rotates 360 degrees counter-clockwise, and then lands.
+            - After landing, video recording is stopped.
+        - The processed frame is displayed in a window named 'video'.
+        - If the ESC key is pressed, all windows are destroyed and the program exits.
+
+---
+
 # JavaScript Drones! 
 
 Watch the videos:
